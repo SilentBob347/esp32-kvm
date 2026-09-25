@@ -273,7 +273,11 @@ export default function SettingsNetworkRoute() {
         });
       }
 
-      if (dirty.ipv4_static?.dns && dirty.ipv4_static.dns.length > 0 && dirty.ipv4_static.dns.every(dirty => dirty)) {
+      if (
+        dirty.ipv4_static?.dns &&
+        dirty.ipv4_static.dns.length > 0 &&
+        dirty.ipv4_static.dns.every(dirty => dirty)
+      ) {
         changes.push({
           label: m.network_ipv4_dns(),
           from: initialSettingsRef.current?.ipv4_static?.dns.join(", ").toString() ?? "",
@@ -305,7 +309,11 @@ export default function SettingsNetworkRoute() {
         });
       }
 
-      if (dirty.ipv6_static?.dns && dirty.ipv6_static.dns.length > 0 && dirty.ipv6_static.dns.every(dirty => dirty)) {
+      if (
+        dirty.ipv6_static?.dns &&
+        dirty.ipv6_static.dns.length > 0 &&
+        dirty.ipv6_static.dns.every(dirty => dirty)
+      ) {
         changes.push({
           label: m.network_ipv6_dns(),
           from: initialSettingsRef.current?.ipv6_static?.dns.join(", ").toString() ?? "",
@@ -332,6 +340,8 @@ export default function SettingsNetworkRoute() {
     [prepareSettings, formState.dirtyFields, onSubmit],
   );
 
+  const readOnlyFields = new Set(watch("read_only_fields") || []);
+  const dhcpClient = watch("dhcp_client");
   const ipv4mode = watch("ipv4_mode");
   const ipv6mode = watch("ipv6_mode");
   const domain = watch("domain");
@@ -423,6 +433,7 @@ export default function SettingsNetworkRoute() {
                 <InputField
                   size="SM"
                   placeholder="http://proxy.example.com:8080"
+                  disabled={readOnlyFields.has("http_proxy")}
                   {...register("http_proxy", {
                     validate: (value: string | null) => {
                       if (value === "" || value === null) return true;
@@ -449,6 +460,7 @@ export default function SettingsNetworkRoute() {
                         { value: "local", label: m.network_domain_local() },
                         { value: "custom", label: m.network_domain_custom() },
                       ]}
+                      disabled={readOnlyFields.has("domain")}
                       {...register("domain")}
                       error={formState.errors.domain?.message}
                     />
@@ -483,6 +495,7 @@ export default function SettingsNetworkRoute() {
                     { value: "ipv4_only", label: m.network_mdns_ipv4_only() },
                     { value: "ipv6_only", label: m.network_mdns_ipv6_only() },
                   ]}
+                  disabled={readOnlyFields.has("mdns_mode")}
                   {...register("mdns_mode")}
                 />
               </SettingsItem>
@@ -500,6 +513,7 @@ export default function SettingsNetworkRoute() {
                     { value: "http_only", label: m.network_time_sync_http_only() },
                     { value: "custom", label: m.network_time_sync_custom() },
                   ]}
+                  disabled={readOnlyFields.has("time_sync_mode")}
                   {...register("time_sync_mode")}
                 />
               </SettingsItem>
@@ -515,7 +529,12 @@ export default function SettingsNetworkRoute() {
                   options={[
                     { value: "jetdhcpc", label: m.network_dhcp_client_jetkvm() },
                     { value: "udhcpc", label: "udhcpc" }, // do not localize
+                    // A client other than these two (a device with its own) stays visible.
+                    ...(!["jetdhcpc", "udhcpc"].includes(dhcpClient) && dhcpClient
+                      ? [{ value: dhcpClient, label: dhcpClient }]
+                      : []),
                   ]}
+                  disabled={readOnlyFields.has("dhcp_client")}
                   {...register("dhcp_client")}
                 />
               </SettingsItem>
@@ -592,6 +611,7 @@ export default function SettingsNetworkRoute() {
                     { value: "static", label: m.network_ipv6_mode_static() },
                     { value: "link_local", label: m.network_ipv6_mode_link_local() },
                   ]}
+                  disabled={readOnlyFields.has("ipv6_mode")}
                   {...register("ipv6_mode")}
                 />
               </SettingsItem>
@@ -634,6 +654,7 @@ export default function SettingsNetworkRoute() {
                         { value: "basic", label: m.network_ll_dp_basic() },
                         { value: "all", label: m.network_ll_dp_all() },
                       ]}
+                      disabled={readOnlyFields.has("lldp_mode")}
                       {...register("lldp_mode")}
                     />
                   </SettingsItem>

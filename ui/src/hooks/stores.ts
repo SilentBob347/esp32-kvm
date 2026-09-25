@@ -894,6 +894,8 @@ export interface IPv6StaticConfig {
 }
 
 export interface NetworkSettings {
+  // Fields this device reports but cannot change; the page shows them disabled.
+  read_only_fields?: string[];
   dhcp_client: string;
   hostname: string | null;
   domain: string | null;
